@@ -110,7 +110,13 @@ root@ae7fae07a94d:~/simple-cli-framework#
  }
  
  ```
- 
+ >打包成phar
+ ```sh
+root@ae7fae07a94d:~# cd simple-cli-framework
+root@ae7fae07a94d:~/simple-cli-framework# php build/build test.phar
+root@ae7fae07a94d:~/simple-cli-framework#
+
+```
 
 免责：当前框架并未针对web环境做安全处理措施，目前情况下请不要用于web环境
 

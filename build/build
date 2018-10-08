@@ -13,7 +13,15 @@
 // | Time: 下午 15:36
 // +----------------------------------------------------------------------
 
-$phar = new Phar('msg.phar',FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::KEY_AS_FILENAME);
+if(!empty($argv[1]))
+{
+    $package_name = $argv[1];
+}
+else
+{
+    $package_name = 'start.phar';
+}
+$phar = new Phar('start.phar',FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::KEY_AS_FILENAME);
 $phar->buildFromDirectory(dirname ( __DIR__),'/\.php$/');
 $phar->compressFiles(Phar::BZ2);
 $phar->stopBuffering();
