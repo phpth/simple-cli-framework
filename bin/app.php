@@ -45,6 +45,7 @@ class app
      * @throws Exception
      */
     public static function start($mode_class = 'bin\mode\cli')
+
     {
         app::load ();
         app::createDir();
@@ -77,7 +78,6 @@ class app
      * 框架自动加载逻辑
      * @param $class
      * @return mixed
-     * @throws Exception
      */
     public static function autoLoad($class)
     {
@@ -89,7 +89,7 @@ class app
         }
         else
         {
-            throw new Exception("{$class} 类文件 $class_path 不存在");
+            return null;
         }
         return $class;
     }

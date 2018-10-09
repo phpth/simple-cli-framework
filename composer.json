@@ -2,6 +2,7 @@
   "require": {
     "ext-curl":"*",
     "ext-iconv":"*",
-    "ext-json":"*"
+    "ext-json":"*",
+    "topthink/think-orm": ">=1.2"
   }
 }

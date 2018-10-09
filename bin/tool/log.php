@@ -19,5 +19,11 @@ use Exception;
 
 trait log
 {
+    public function log($msg,$file=ROOT_PATH."tmp/".__CLASS__.'-run.log')
+    {
 
+        $log_dir = dirname ( $file);
+        safe_mkdir ( $log_dir);
+        file_put_contents ( $file , $msg,FILE_APPEND|LOCK_EX);
+    }
 }

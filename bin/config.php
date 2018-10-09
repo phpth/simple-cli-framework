@@ -35,7 +35,7 @@ class config
             config::$data = require CONFIG_FILE;
             if(is_file ( config::$data['ext-config-file']))
             {
-                config::$data = array_merge( config::$data,parse_ini_file ( config::$data['ext-config-file']));
+                config::$data = array_merge( config::$data,parse_ini_file ( config::$data['ext-config-file'],true));
             }
         }
         if(empty(config::$data))

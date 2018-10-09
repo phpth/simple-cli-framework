@@ -13,6 +13,12 @@
 // | Time: 下午 20:56
 // +----------------------------------------------------------------------
 
+/**
+ * 安全的创建文件夹
+ * @param $path
+ * @param int $mode
+ * @return bool
+ */
 function safe_mkdir($path, $mode = 0777)
 {
     if(is_dir($path))
