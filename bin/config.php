@@ -14,6 +14,7 @@
 // +----------------------------------------------------------------------
 
 namespace bin;
+
 /**
  * 配置获取
  * Class config
@@ -30,14 +31,7 @@ class config
      */
     public static function get($key)
     {
-        if(config::$data === null)
-        {
-            config::$data = require CONFIG_FILE;
-            if(is_file ( config::$data['ext-config-file']))
-            {
-                config::$data = array_merge( config::$data,parse_ini_file ( config::$data['ext-config-file'],true));
-            }
-        }
+        config::load ();
         if(empty(config::$data))
         {
             return null;
@@ -76,10 +70,7 @@ class config
      */
     public static function set($key, $value)
     {
-        if(config::$data === null)
-        {
-            config::$data = require CONFIG_FILE;
-        }
+        config::load();
         $key =  trim(trim($key),'.');
         if(empty($key))
         {
@@ -97,5 +88,32 @@ class config
         }
         $data = $value;
         return true ;
+    }
+
+    /**
+     * 加载配置信息
+     */
+    protected static function load()
+    {
+        if(config::$data === null)
+        {
+            config::$data = require CONFIG_FILE;
+            if(is_file ( config::$data['ext-config-file']))
+            {
+                config::$data = array_merge( config::$data,parse_ini_file ( config::$data['ext-config-file'],true));
+            }
+        }
+    }
+
+    /**
+     * 以php数组的方式导出配置
+     * @param $file
+     * @return bool
+     */
+    public static function export($file)
+    {
+        safe_mkdir ( dirname($file));
+        config::load ();
+        return false !== file_put_contents ( $file , "<?php \n".var_export ( config::$data,true).';'.PHP_EOL);
     }
 }

@@ -71,11 +71,18 @@ class process
 
     /**
      * 执行命令进程
+     * @param int $run_cmd_times 0: 代表守护执行的进程，如果进程停止则从新开启进程。 >0 : 代表守护次数
      * @return bool
      * @throws Exception
      */
-    public function run()
+    public function run($run_cmd_times = 1)
     {
+        $demo = (int) abs ( $run_cmd_times);
+        if(!$demo)
+        {
+            $run_cmd_times = PHP_INT_MAX;
+        }
+        $this->stop_process_list = array_combine ( array_keys ( $this->cmd_list_info) , array_fill ( 0 , count($this->cmd_list_info) , $run_cmd_times-1));
         foreach($this->cmd_list_info as $k=>$v)
         {
             $this->process_list[$k] = proc_open ( $v['cmd'] , $v['des'] , $this->cmd_list_info[$k]['pipe'],ROOT_PATH);
@@ -93,24 +100,18 @@ class process
 
     /**
      * 等待进程执行结束
-     * @param int $run_cmd_times 0: 代表守护执行的进程，如果进程停止则从新开启进程。 >0 : 代表守护次数
-     * @param float $interval
+     * @param bool $block 是否阻塞等待
+     * @param float $interval 等待间隔
      */
-    public function wait($run_cmd_times = 0, $interval = 1.0)
+    public function wait($block = true,  $interval = 1.0)
     {
-        $demo = (int) abs ( $run_cmd_times);
-        if(!$demo)
-        {
-            $run_cmd_times = PHP_INT_MAX;
-        }
-        $this->stop_process_list = array_combine ( array_keys ( $this->cmd_list_info) , array_fill ( 0 , count($this->cmd_list_info) , $run_cmd_times-1));
         do{
             foreach ( $this -> cmd_list_info as $k => $v ) {
                 if ( !empty( $this -> process_list[ $k ] ) ) {
                     $status = $this -> processStatus ( $this -> process_list[ $k ] );
                     if ( is_array ( $status ) ) {
                         if ( !$status[ 'running' ] ) {
-                            $this -> log ( "进程编号为：{$k} 的cmd进程执行结束, {$status['msg']}" );
+                            $this -> log ( 'notice',"进程编号为：{$k} 的cmd进程执行结束, {$status['msg']}" );
                             if ( $this -> stop_process_list[ $k ] <= 0 ) {
                                 unset( $this -> process_list[ $k ] );
                             }
@@ -119,7 +120,7 @@ class process
                                 $this -> process_list[ $k ] = false;
                                 $recreate_msg               = $this -> reCreateProcess ( $k );
                                 if ( $recreate_msg ) {
-                                    $this -> log ( $recreate_msg );
+                                    $this -> log ( 'error',$recreate_msg );
                                 }
                                 else {
                                     $this -> stop_process_list[ $k ] --;
@@ -128,12 +129,13 @@ class process
                         }
                     }
                     else {
-                        $this -> log ( $status );
+                        $this -> log ('error', "cmd: {$v['cmd']}, $status" );
                     }
                 }
             }
             usleep($interval*1000000);
-        }while(count($this->process_list)>0);
+        }while($block && count ($this->process_list)>0);
+        $this->log('info','命令进程全部执行结束！');
     }
 
     /**
@@ -149,7 +151,7 @@ class process
             {
                 $flag = $v;
             }
-            $cmd = "ps aux | grep {$flag} | grep -v grep | tail -n 1 | awk '{print \"kill -s {$signal} \"$2 }' | sh" ;
+            $cmd = "ps aux | grep '{$flag}' | grep -v grep | tail -n 1 | awk '{print \"kill -s {$signal} \"$2 }' | sh" ;
             echo $cmd.PHP_EOL;
             echo shell_exec ($cmd ).PHP_EOL;
         }
@@ -192,11 +194,11 @@ class process
      */
     protected function reCreateProcess($process_no)
     {
-        $this->log ( "正在重建编号为：{$process_no}的cmd进程！");
+        $this->log ( 'info',"正在重建编号为：{$process_no}的cmd进程！");
         $this->process_list[$process_no] = proc_open ( $this->cmd_list_info[$process_no]['cmd'] , $this->cmd_list_info[$process_no]['des'] , $this->cmd_list_info[$process_no]['pipe'],ROOT_PATH);
         if(!is_resource ( $this->process_list[$process_no]))
         {
-            return '重新创建命令进程失败！';
+            return "重新创建命令进程失败！cmd: {$this->cmd_list_info[$process_no]['cmd']}";
         }
         return null;
     }
@@ -228,11 +230,12 @@ class process
 
     /**
      * 写入日志
-     * @param $msg
+     * @param string $level
+     * @param string $msg
      */
-    protected function log($msg)
+    protected function log($level, $msg)
     {
-        $msg = date('Y-m-d H:i:s').", $msg ".PHP_EOL;
+        $msg = date('Y-m-d H:i:s')." [{$level}] $msg ".PHP_EOL;
         fwrite ( $this->log_handle , $msg);
     }
 }

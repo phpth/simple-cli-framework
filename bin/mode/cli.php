@@ -32,11 +32,11 @@ class cli extends mode
         {
             throw new Exception('必须cli模式下运行！');
         }
-        $this->param_handle = [
+        $this->param_handle = array_merge ( [
             'help'=>[$this,'help'],
             'pc'=>[$this,'pcPaParam'],
             'pa'=>[$this,'pcPaParam'],
-        ];
+        ],command::get());
     }
 
     /**
